@@ -5,8 +5,11 @@
 package it.polito.tdp.crimes;
 
 import java.net.URL;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.ResourceBundle;
 
+import it.polito.tdp.crimes.db.Adiacenza;
 import it.polito.tdp.crimes.model.Model;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
@@ -25,16 +28,16 @@ public class CrimesController {
     private URL location;
 
     @FXML // fx:id="boxCategoria"
-    private ComboBox<?> boxCategoria; // Value injected by FXMLLoader
+    private ComboBox<String> boxCategoria; // Value injected by FXMLLoader
 
     @FXML // fx:id="boxAnno"
-    private ComboBox<?> boxAnno; // Value injected by FXMLLoader
+    private ComboBox<Integer> boxAnno; // Value injected by FXMLLoader
 
     @FXML // fx:id="btnAnalisi"
     private Button btnAnalisi; // Value injected by FXMLLoader
 
     @FXML // fx:id="boxArco"
-    private ComboBox<?> boxArco; // Value injected by FXMLLoader
+    private ComboBox<Adiacenza> boxArco; // Value injected by FXMLLoader
 
     @FXML // fx:id="btnPercorso"
     private Button btnPercorso; // Value injected by FXMLLoader
@@ -45,13 +48,28 @@ public class CrimesController {
     @FXML
     void doCreaGrafo(ActionEvent event) {
     	txtResult.clear();
-    	txtResult.appendText("Crea grafo...\n");
+    	if(boxCategoria==null) {
+    		txtResult.appendText("Seleziona una categoria");
+    		return;
+    	}
+    	if(boxAnno==null) {
+    		txtResult.appendText("Seleziona un anno");
+    		return;
+    	}
+    	String msg = model.doCreaGrafo(boxCategoria.getValue(), boxAnno.getValue());
+    	txtResult.appendText(msg);
+    	boxArco.getItems().clear();
+    	boxArco.getItems().addAll(model.getArchiMax());
     }
 
     @FXML
     void doCalcolaPercorso(ActionEvent event) {
-    	txtResult.clear();
-    	txtResult.appendText("Calcola percorso...\n");
+    	if(boxArco==null) {
+    		txtResult.appendText("Seleziona un arco di peso massimo");
+    		return;
+    	}
+    	String msg = model.run(boxArco.getValue());
+    	txtResult.appendText(msg);
     }
 
     @FXML // This method is called by the FXMLLoader when initialization is complete
@@ -67,5 +85,9 @@ public class CrimesController {
     
     public void setModel(Model model) {
     	this.model = model;
+    	List<String> off = new ArrayList<>(model.listAllOffense());
+    	List<Integer> years = new ArrayList<>(model.listAllYears());
+    	boxCategoria.getItems().addAll(off);
+    	boxAnno.getItems().addAll(years);
     }
 }
